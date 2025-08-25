@@ -1,0 +1,11 @@
+# Ignore dataset folder
+dataset/
+.ipynb_checkpoints/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment
+virtua/
+.env/
