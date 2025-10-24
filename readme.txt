@@ -15,4 +15,4 @@ curl -X POST -F "image=@C:\Users\cryin\Work\vc-emotion-detection-master\dataset\
 
 
 #camera.py
-It is a module to start camera and directly show the emotions there instead of going through a GUI or frontend.
+It is a module to start camera and directly show the emotions there instead of going through a GUI or frontend...
