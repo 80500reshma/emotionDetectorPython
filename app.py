@@ -2,10 +2,32 @@ from flask import Flask, request, jsonify
 import tensorflow as tf
 import numpy as np
 import cv2
+import os
+import requests
 
-# Load model
-model = tf.keras.models.load_model("model.h5")
-model.load_weights("modelWeights.weights.h5")
+# URLs to your GitHub Release files
+MODEL_URL = "https://github.com/80500reshma/emotionDetectorPython/releases/download/v1.0/model.h5"
+WEIGHTS_URL = "https://github.com/80500reshma/emotionDetectorPython/releases/download/v1.0/modelWeights.weights.h5"
+
+# Local paths
+MODEL_PATH = "model.h5"
+WEIGHTS_PATH = "modelWeights.weights.h5"
+
+# Download files if they don't exist
+def download_file(url, path):
+    if not os.path.exists(path):
+        print(f"Downloading {path}...")
+        r = requests.get(url, allow_redirects=True)
+        with open(path, 'wb') as f:
+            f.write(r.content)
+        print(f"{path} downloaded!")
+
+download_file(MODEL_URL, MODEL_PATH)
+download_file(WEIGHTS_URL, WEIGHTS_PATH)
+
+# Load model and weights
+model = tf.keras.models.load_model(MODEL_PATH)
+model.load_weights(WEIGHTS_PATH)
 
 label_dict = {0:'Angry',1:'Disgust',2:'Fear',3:'Happy',4:'Neutral',5:'Sad',6:'Surprise'}
 
