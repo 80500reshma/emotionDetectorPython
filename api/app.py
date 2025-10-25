@@ -17,17 +17,33 @@ WEIGHTS_PATH = "modelWeights.weights.h5"
 def download_file(url, path):
     if not os.path.exists(path):
         print(f"Downloading {path}...")
-        r = requests.get(url, allow_redirects=True)
-        with open(path, 'wb') as f:
-            f.write(r.content)
-        print(f"{path} downloaded!")
+        try:
+            r = requests.get(url, allow_redirects=True, timeout=30)
+            with open(path, 'wb') as f:
+                f.write(r.content)
+            print(f"{path} downloaded!")
+            return True
+        except Exception as e:
+            print(f"Failed to download {path}: {e}")
+            return False
+    return True
 
-download_file(MODEL_URL, MODEL_PATH)
-download_file(WEIGHTS_URL, WEIGHTS_PATH)
+# Try to download models, but don't fail if they don't exist
+model_downloaded = download_file(MODEL_URL, MODEL_PATH)
+weights_downloaded = download_file(WEIGHTS_URL, WEIGHTS_PATH)
 
-# Load model and weights
-model = tf.keras.models.load_model(MODEL_PATH)
-model.load_weights(WEIGHTS_PATH)
+# Load model and weights only if they exist
+model = None
+if model_downloaded and weights_downloaded and os.path.exists(MODEL_PATH) and os.path.exists(WEIGHTS_PATH):
+    try:
+        model = tf.keras.models.load_model(MODEL_PATH)
+        model.load_weights(WEIGHTS_PATH)
+        print("Model loaded successfully!")
+    except Exception as e:
+        print(f"Failed to load model: {e}")
+        model = None
+else:
+    print("Model files not available - using placeholder")
 
 label_dict = {0:'Angry',1:'Disgust',2:'Fear',3:'Happy',4:'Neutral',5:'Sad',6:'Surprise'}
 
@@ -35,6 +51,9 @@ app = Flask(__name__)
 
 @app.route('/predict', methods=['POST'])
 def predict_emotion():
+    if model is None:
+        return jsonify({'error': 'Model not available. Please check if model files are properly uploaded to GitHub releases.'}), 503
+    
     if 'image' not in request.files:
         return jsonify({'error': 'No image file provided'}), 400
 
